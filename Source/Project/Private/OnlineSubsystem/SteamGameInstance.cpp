@@ -48,6 +48,14 @@ void USteamGameInstance::OnCreateSessionComplete(FName ServerName, bool Succeede
 void USteamGameInstance::OnFindSessionsComplete(bool Succeeded)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnFindSessionsComplete, Succeeded: %d"), Succeeded);
+	if (Succeeded) 
+	{
+		TArray<FOnlineSessionSearchResult> SearchResults = SessionSearch->SearchResults;
+		UE_LOG(LogTemp, Warning, TEXT("SearchResults, Server Count: %d"), SearchResults.Num());
+
+	}
+		
+	
 }
 
 void USteamGameInstance::CreateServer()
@@ -67,6 +75,7 @@ void USteamGameInstance::CreateServer()
 }
 
 void USteamGameInstance::JoinServer()
+
 {
 	UE_LOG(LogTemp, Warning, TEXT("JoinServer"));
 
