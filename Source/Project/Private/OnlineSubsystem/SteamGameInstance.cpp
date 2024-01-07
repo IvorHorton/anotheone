@@ -4,7 +4,7 @@
 
 #include "OnlineSubsystem/SteamGameInstance.h"
 
-
+#include "Kismet/GameplayStatics.h"
 #include "OnlineSubsystem.h"
 #include "OnlineSessionSettings.h"
 
@@ -26,6 +26,7 @@ void USteamGameInstance::Init()
 			//Bind Delegates Here
 			SessionInterface->OnCreateSessionCompleteDelegates.AddUObject(this, &USteamGameInstance::OnCreateSessionComplete);
 			SessionInterface->OnFindSessionsCompleteDelegates.AddUObject(this, &USteamGameInstance::OnFindSessionsComplete);
+			SessionInterface->OnJoinSessionCompleteDelegates.AddUObject(this, &USteamGameInstance::OnJoinSessionsComplete);
 
 		}
 			
@@ -48,14 +49,34 @@ void USteamGameInstance::OnCreateSessionComplete(FName ServerName, bool Succeede
 void USteamGameInstance::OnFindSessionsComplete(bool Succeeded)
 {
 	UE_LOG(LogTemp, Warning, TEXT("OnFindSessionsComplete, Succeeded: %d"), Succeeded);
+
 	if (Succeeded) 
 	{
 		TArray<FOnlineSessionSearchResult> SearchResults = SessionSearch->SearchResults;
 		UE_LOG(LogTemp, Warning, TEXT("SearchResults, Server Count: %d"), SearchResults.Num());
+		if (SearchResults.Num()) 
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Joining Server"));
+			SessionInterface->JoinSession(0, "My Session", SearchResults[0]);
+		}
+			
+		
 
 	}
 		
 	
+}
+
+void USteamGameInstance::OnJoinSessionsComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
+{
+	UE_LOG(LogTemp, Warning, TEXT("OnJoinSessionsComplete"));
+	if (APlayerController* PController =UGameplayStatics::GetPlayerController(GetWorld(), 0))
+	{
+		FString JoinAddress = "";
+		SessionInterface->GetResolvedConnectString(SessionName, JoinAddress);
+		if (JoinAddress != "")
+			PController->ClientTravel(JoinAddress, ETravelType::TRAVEL_Absolute);
+	}
 }
 
 void USteamGameInstance::CreateServer()
